@@ -505,6 +505,14 @@ public class StudentEntryForm extends JFrame {
                 }
         }
 
+        private void UpdateButtonActionPerformed(java.awt.event.ActionEvent evt) {
+                if (_checkInputFields()) {
+                        if (JOptionPane.showConfirmDialog(null, "Update Student Data?", "Confirm", 0, 3) == 0) {
+                                _updateStudentData();
+                        }
+                }
+        }
+
         private void _saveStudentData() {
                 if (photopath == null) {
                         JOptionPane.showMessageDialog(null, "Photo Is Required!!!");
@@ -512,6 +520,7 @@ public class StudentEntryForm extends JFrame {
                 }
                 final String sql = "INSERT INTO student(name, roll_no, application_no, registration_no, mother_name, mother_occupation, address, father_name, father_occupation, sex, dob, phone, email, photo, password, date_of_application, course, branch, batch, semester, year_of_passing, hostel, library, qualification, university, quota, marks) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 try {
+                        con.setAutoCommit(false);
                         PreparedStatement ps = con.prepareStatement(sql);
                         ps.setString(1, NameTextField.getText());
                         int batch_year = BatchYearChooser.getYear() % 100;
@@ -545,19 +554,23 @@ public class StudentEntryForm extends JFrame {
                         ps.setDouble(27, Double.parseDouble(MarksTextField.getText()));
 
                         if (ps.executeUpdate() >= 1) {
+                                con.commit();
                                 JOptionPane.showMessageDialog(null, "Student data saved.");
                                 clearFields();
+                        } else {
+                                con.rollback();
                         }
                 } catch (Exception e) {
+                        try {
+                                con.rollback();
+                        } catch (Exception ex) {
+                        }
                         System.out.println(e);
                         JOptionPane.showMessageDialog(null, "Insertion Failed", "Error", 0);
-                }
-        }
-
-        private void UpdateButtonActionPerformed(java.awt.event.ActionEvent evt) {
-                if (_checkInputFields()) {
-                        if (JOptionPane.showConfirmDialog(null, "Update Student Data?", "Confirm", 0, 3) == 0) {
-                                _updateStudentData();
+                } finally {
+                        try {
+                                con.setAutoCommit(true);
+                        } catch (Exception ex) {
                         }
                 }
         }
@@ -570,6 +583,7 @@ public class StudentEntryForm extends JFrame {
                         sql = "UPDATE student SET name=?, mother_name=?, mother_occupation=?, address=?, father_name=?, father_occupation=?, sex=?, dob=?, phone=?, email=?, photo=?, password=?, date_of_application=?, course=?, branch=?, batch=?, semester=?, year_of_passing=?, hostel=?, library=?, qualification=?, university=?, quota=?, marks=?, status=? WHERE registration_no=?";
                 }
                 try {
+                        con.setAutoCommit(false);
                         PreparedStatement ps = con.prepareStatement(sql);
                         ps.setString(1, NameTextField.getText());
                         ps.setString(2, MotherNameTextField.getText());
@@ -603,26 +617,51 @@ public class StudentEntryForm extends JFrame {
                         ps.setString(i++, RegNoTextField.getText());
 
                         if (ps.executeUpdate() >= 1) {
+                                con.commit();
                                 JOptionPane.showMessageDialog(null, "Student data updated.");
+                        } else {
+                                con.rollback();
                         }
                 } catch (Exception e) {
+                        try {
+                                con.rollback();
+                        } catch (Exception ex) {
+                        }
                         System.out.println(e);
                         JOptionPane.showMessageDialog(null, "Update Failed", "Error", 0);
+                } finally {
+                        try {
+                                con.setAutoCommit(true);
+                        } catch (Exception ex) {
+                        }
                 }
         }
 
         private void DeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {
                 if (JOptionPane.showConfirmDialog(null, "Delete Student Data?", "Confirm", 0, 3) == 0) {
                         try {
+                                con.setAutoCommit(false);
                                 PreparedStatement ps = con
                                                 .prepareStatement("DELETE FROM student WHERE registration_no=?");
                                 ps.setString(1, RegNoTextField.getText());
                                 if (ps.executeUpdate() >= 1) {
+                                        con.commit();
                                         JOptionPane.showMessageDialog(null, "Student data deleted.");
                                         clearFields();
+                                } else {
+                                        con.rollback();
                                 }
                         } catch (Exception e) {
+                                try {
+                                        con.rollback();
+                                } catch (Exception ex) {
+                                }
                                 System.out.println(e);
+                        } finally {
+                                try {
+                                        con.setAutoCommit(true);
+                                } catch (Exception ex) {
+                                }
                         }
                 }
         }

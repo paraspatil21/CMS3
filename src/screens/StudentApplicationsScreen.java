@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -112,13 +113,15 @@ public class StudentApplicationsScreen extends JFrame {
     }
 
     private void searchStudent() {
-        String val = SearchTextField.getText();
+        String val = "%" + SearchTextField.getText() + "%";
         try {
-            String qry = "SELECT * FROM student WHERE (name LIKE '%" + val + "%' OR roll_no LIKE '%" + val
-                    + "%' OR registration_no LIKE '%" + val + "%' OR application_no LIKE '%" + val
-                    + "%') AND (status!='CONFIRM')";
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery(qry);
+            String qry = "SELECT * FROM student WHERE (name LIKE ? OR roll_no LIKE ? OR registration_no LIKE ? OR application_no LIKE ?) AND (status!='CONFIRM')";
+            PreparedStatement ps = con.prepareStatement(qry);
+            ps.setString(1, val);
+            ps.setString(2, val);
+            ps.setString(3, val);
+            ps.setString(4, val);
+            ResultSet rs = ps.executeQuery();
             student_list.clear();
             while (rs.next()) {
                 student_list.add(new Student(rs.getString("name"), rs.getString("roll_no"),

@@ -235,6 +235,7 @@ public class HostelIssueForm extends JFrame {
         if (validateInputs()
                 && JOptionPane.showConfirmDialog(null, "Issue hostel?", "Confirm", JOptionPane.YES_NO_OPTION) == 0) {
             try {
+                con.setAutoCommit(false);
                 PreparedStatement ps = con.prepareStatement(
                         "INSERT INTO hostel(reg_no, name, hostel_no, floor_no, room_no, room_type, bed_type, timestamp) VALUES (?,?,?,?,?,?,?,?)");
                 ps.setString(1, RegNoTextField.getText().toUpperCase());
@@ -246,11 +247,23 @@ public class HostelIssueForm extends JFrame {
                 ps.setString(7, BedTypeComboBox.getSelectedItem().toString());
                 ps.setString(8, new SimpleDateFormat("dd-MM-yyyy").format(DateChooser.getDate()));
                 if (ps.executeUpdate() == 1) {
+                    con.commit();
                     JOptionPane.showMessageDialog(null, "Issued!");
                     clearFields();
+                } else {
+                    con.rollback();
                 }
             } catch (Exception e) {
+                try {
+                    con.rollback();
+                } catch (Exception ex) {
+                }
                 System.out.println(e);
+            } finally {
+                try {
+                    con.setAutoCommit(true);
+                } catch (Exception ex) {
+                }
             }
         }
     }
@@ -263,6 +276,7 @@ public class HostelIssueForm extends JFrame {
         if (validateInputs()
                 && JOptionPane.showConfirmDialog(null, "Update record?", "Confirm", JOptionPane.YES_NO_OPTION) == 0) {
             try {
+                con.setAutoCommit(false);
                 PreparedStatement ps = con.prepareStatement(
                         "UPDATE hostel SET reg_no=?, name=?, hostel_no=?, floor_no=?, room_no=?, room_type=?, bed_type=?, timestamp=? WHERE reg_no LIKE ?");
                 ps.setString(1, RegNoTextField.getText().toUpperCase());
@@ -274,10 +288,23 @@ public class HostelIssueForm extends JFrame {
                 ps.setString(7, BedTypeComboBox.getSelectedItem().toString());
                 ps.setString(8, new SimpleDateFormat("dd-MM-yyyy").format(DateChooser.getDate()));
                 ps.setString(9, "%" + RegNoTextField.getText() + "%");
-                if (ps.executeUpdate() == 1)
+                if (ps.executeUpdate() == 1) {
+                    con.commit();
                     JOptionPane.showMessageDialog(null, "Updated!");
+                } else {
+                    con.rollback();
+                }
             } catch (Exception e) {
+                try {
+                    con.rollback();
+                } catch (Exception ex) {
+                }
                 System.out.println(e);
+            } finally {
+                try {
+                    con.setAutoCommit(true);
+                } catch (Exception ex) {
+                }
             }
         }
     }
@@ -293,14 +320,27 @@ public class HostelIssueForm extends JFrame {
         }
         if (JOptionPane.showConfirmDialog(null, "Delete record?", "Confirm", JOptionPane.YES_NO_OPTION) == 0) {
             try {
+                con.setAutoCommit(false);
                 PreparedStatement ps = con.prepareStatement("DELETE FROM hostel WHERE reg_no LIKE ?");
                 ps.setString(1, "%" + RegNoTextField.getText() + "%");
                 if (ps.executeUpdate() == 1) {
+                    con.commit();
                     JOptionPane.showMessageDialog(null, "Deleted!");
                     clearFields();
+                } else {
+                    con.rollback();
                 }
             } catch (Exception e) {
+                try {
+                    con.rollback();
+                } catch (Exception ex) {
+                }
                 System.out.println(e);
+            } finally {
+                try {
+                    con.setAutoCommit(true);
+                } catch (Exception ex) {
+                }
             }
         }
     }

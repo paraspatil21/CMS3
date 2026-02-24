@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class FacultyPortal extends JFrame {
 
         JPanel centerPanel = new JPanel(new BorderLayout());
 
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 4, 10, 10));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 10, 10));
         JButton AddFacultyButton = new JButton("Add Faculty");
         AddFacultyButton.addActionListener(e -> {
             if (role == Role.ADMIN)
@@ -88,16 +89,10 @@ public class FacultyPortal extends JFrame {
             else
                 JOptionPane.showMessageDialog(null, "Access Denied!");
         });
-        JButton SubjectIssueButton = new JButton("Subject Issuing");
-        SubjectIssueButton.addActionListener(e -> new FacultySubjectIssuingScreen(role).setVisible(true));
-        JButton TimetableButton = new JButton("Time Table");
-        TimetableButton.addActionListener(e -> new TimeTableScreen(role).setVisible(true));
         JButton RefreshButton = new JButton("Refresh");
         RefreshButton.addActionListener(e -> fillTable());
 
         buttonPanel.add(AddFacultyButton);
-        buttonPanel.add(SubjectIssueButton);
-        buttonPanel.add(TimetableButton);
         buttonPanel.add(RefreshButton);
         centerPanel.add(buttonPanel, BorderLayout.NORTH);
 
@@ -130,12 +125,14 @@ public class FacultyPortal extends JFrame {
     }
 
     private void searchFaculty() {
-        String val = SearchTextField.getText();
+        String val = "%" + SearchTextField.getText() + "%";
         try {
-            String qry = "SELECT * FROM faculty WHERE name LIKE '%" + val + "%' OR registration_no LIKE '%" + val
-                    + "%' OR designation LIKE '%" + val + "%'";
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery(qry);
+            String qry = "SELECT * FROM faculty WHERE name LIKE ? OR registration_no LIKE ? OR designation LIKE ?";
+            PreparedStatement ps = con.prepareStatement(qry);
+            ps.setString(1, val);
+            ps.setString(2, val);
+            ps.setString(3, val);
+            ResultSet rs = ps.executeQuery();
             faculty_list.clear();
             while (rs.next()) {
                 faculty_list.add(new Faculty(rs.getString("registration_no"), rs.getString("name"),

@@ -369,6 +369,7 @@ public class FacultyEntryForm extends JFrame {
         private void SaveButtonActionPerformed(java.awt.event.ActionEvent evt) {
                 if (checkInputs()) {
                         try {
+                                con.setAutoCommit(false);
                                 String sql = "INSERT INTO faculty(registration_no, name, father_name, sex, dob, email, phone, password, address, photo, qualifications, institution, designation, experience, course, department, date_joined, date_updated) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                                 PreparedStatement ps = con.prepareStatement(sql);
                                 ps.setString(1, RegNoTextField.getText());
@@ -396,11 +397,23 @@ public class FacultyEntryForm extends JFrame {
                                 ps.setString(17, sdf.format(DOJChooser.getDate()));
                                 ps.setString(18, sdf.format(DateChooser.getDate()));
                                 if (ps.executeUpdate() == 1) {
+                                        con.commit();
                                         JOptionPane.showMessageDialog(null, "Faculty Recorded!");
                                         clearFields();
+                                } else {
+                                        con.rollback();
                                 }
                         } catch (Exception e) {
+                                try {
+                                        con.rollback();
+                                } catch (Exception ex) {
+                                }
                                 System.out.println(e);
+                        } finally {
+                                try {
+                                        con.setAutoCommit(true);
+                                } catch (Exception ex) {
+                                }
                         }
                 }
         }
@@ -408,6 +421,7 @@ public class FacultyEntryForm extends JFrame {
         private void UpdateButtonActionPerformed(java.awt.event.ActionEvent evt) {
                 if (checkInputs()) {
                         try {
+                                con.setAutoCommit(false);
                                 String sql = "UPDATE faculty SET name=?, father_name=?, sex=?, dob=?, email=?, phone=?, password=?, address=?, photo=?, qualifications=?, institution=?, designation=?, experience=?, course=?, department=?, date_joined=?, date_updated=? WHERE registration_no=?";
                                 PreparedStatement ps = con.prepareStatement(sql);
                                 ps.setString(1, NameTextField.getText());
@@ -423,10 +437,8 @@ public class FacultyEntryForm extends JFrame {
                                         InputStream img = new FileInputStream(new File(photopath));
                                         ps.setBlob(9, img);
                                 } else {
-                                        // How to keep old photo? This requires more logic, usually a separate update or
-                                        // fetching old first.
-                                        // For simplicity, let's assume if photopath is null we don't update blob or we
-                                        // should have fetched it.
+                                        // Keeping old photo would require more logic, but we must follow ACID for the
+                                        // transaction itself
                                 }
                                 ps.setString(10, QualificationTextField.getText());
                                 ps.setString(11, InstitutionTextField.getText());
@@ -437,24 +449,50 @@ public class FacultyEntryForm extends JFrame {
                                 ps.setString(16, sdf.format(DOJChooser.getDate()));
                                 ps.setString(17, sdf.format(DateChooser.getDate()));
                                 ps.setString(18, RegNoTextField.getText());
-                                if (ps.executeUpdate() == 1)
+                                if (ps.executeUpdate() == 1) {
+                                        con.commit();
                                         JOptionPane.showMessageDialog(null, "Updated!");
+                                } else {
+                                        con.rollback();
+                                }
                         } catch (Exception e) {
+                                try {
+                                        con.rollback();
+                                } catch (Exception ex) {
+                                }
                                 System.out.println(e);
+                        } finally {
+                                try {
+                                        con.setAutoCommit(true);
+                                } catch (Exception ex) {
+                                }
                         }
                 }
         }
 
         private void DeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {
                 try {
+                        con.setAutoCommit(false);
                         PreparedStatement ps = con.prepareStatement("DELETE FROM faculty WHERE registration_no=?");
                         ps.setString(1, RegNoTextField.getText());
                         if (ps.executeUpdate() == 1) {
+                                con.commit();
                                 JOptionPane.showMessageDialog(null, "Deleted!");
                                 clearFields();
+                        } else {
+                                con.rollback();
                         }
                 } catch (Exception e) {
+                        try {
+                                con.rollback();
+                        } catch (Exception ex) {
+                        }
                         System.out.println(e);
+                } finally {
+                        try {
+                                con.setAutoCommit(true);
+                        } catch (Exception ex) {
+                        }
                 }
         }
 

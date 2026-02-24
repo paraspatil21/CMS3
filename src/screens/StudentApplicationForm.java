@@ -470,6 +470,7 @@ public class StudentApplicationForm extends JFrame {
                         return;
                 }
                 try {
+                        con.setAutoCommit(false);
                         String sql = "INSERT INTO student(name, roll_no, application_no, registration_no, mother_name, mother_occupation, address, father_name, father_occupation, sex, dob, phone, email, photo, password, date_of_application, course, branch, batch, semester, year_of_passing, hostel, library, qualification, university, quota, marks) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         PreparedStatement ps = con.prepareStatement(sql);
                         ps.setString(1, NameTextField.getText());
@@ -504,12 +505,24 @@ public class StudentApplicationForm extends JFrame {
                         ps.setDouble(27, Double.parseDouble(MarksTextField.getText()));
 
                         if (ps.executeUpdate() >= 1) {
+                                con.commit();
                                 JOptionPane.showMessageDialog(null, "Submitted! Reg No: " + RegNoTextField.getText());
                                 clearFields();
+                        } else {
+                                con.rollback();
                         }
                 } catch (Exception e) {
+                        try {
+                                con.rollback();
+                        } catch (Exception ex) {
+                        }
                         System.out.println(e);
                         JOptionPane.showMessageDialog(null, "Failed: " + e.getMessage());
+                } finally {
+                        try {
+                                con.setAutoCommit(true);
+                        } catch (Exception ex) {
+                        }
                 }
         }
 

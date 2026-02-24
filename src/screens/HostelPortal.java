@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -84,8 +85,6 @@ public class HostelPortal extends JFrame {
             else
                 JOptionPane.showMessageDialog(null, "Access Denied!");
         });
-        JButton MessMenuBtn = new JButton("Mess Menu");
-        JButton RulesBtn = new JButton("Rules & Regulations");
         JButton RefreshButton = new JButton("Refresh");
         RefreshButton.addActionListener(e -> {
             SearchTextField.setText(null);
@@ -93,8 +92,6 @@ public class HostelPortal extends JFrame {
         });
 
         buttonPanel.add(EntryButton);
-        buttonPanel.add(MessMenuBtn);
-        buttonPanel.add(RulesBtn);
         buttonPanel.add(RefreshButton);
         centerPanel.add(buttonPanel, BorderLayout.NORTH);
 
@@ -129,11 +126,13 @@ public class HostelPortal extends JFrame {
     }
 
     private void searchHostel() {
-        String val = SearchTextField.getText();
+        String val = "%" + SearchTextField.getText() + "%";
         try {
-            String qry = "SELECT * FROM hostel WHERE name LIKE '%" + val + "%' OR reg_no LIKE '%" + val + "%'";
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery(qry);
+            String qry = "SELECT * FROM hostel WHERE name LIKE ? OR reg_no LIKE ?";
+            PreparedStatement ps = con.prepareStatement(qry);
+            ps.setString(1, val);
+            ps.setString(2, val);
+            ResultSet rs = ps.executeQuery();
             hostel_list.clear();
             while (rs.next()) {
                 hostel_list.add(new Hostel(rs.getString("reg_no"), rs.getString("name"), rs.getString("hostel_no"),

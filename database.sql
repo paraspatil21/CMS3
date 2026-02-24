@@ -45,30 +45,6 @@ CREATE TABLE IF NOT EXISTS subject (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Time Table table
-CREATE TABLE IF NOT EXISTS time_table (
-    UID INT(11) AUTO_INCREMENT PRIMARY KEY,
-    id VARCHAR(100) NOT NULL,
-    subject VARCHAR(100) NOT NULL,
-    faculty VARCHAR(100) NOT NULL,
-    course VARCHAR(100) NOT NULL,
-    branch VARCHAR(100) NOT NULL,
-    semester VARCHAR(20) NOT NULL,
-    section VARCHAR(20) NOT NULL,
-    day VARCHAR(20) NOT NULL,
-    time VARCHAR(55) NOT NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Accounts table
-CREATE TABLE IF NOT EXISTS accounts (
-    UID INT(11) AUTO_INCREMENT PRIMARY KEY,
-    roll_no VARCHAR(100) NOT NULL,
-    total_fees VARCHAR(100),
-    paid_fees VARCHAR(100),
-    due_fees VARCHAR(100),
-    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
 
 -- Faculty table
 CREATE TABLE IF NOT EXISTS faculty (
@@ -141,5 +117,17 @@ CREATE TABLE IF NOT EXISTS hostel (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Library table
+CREATE TABLE IF NOT EXISTS library (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    book_name VARCHAR(100) NOT NULL,
+    author_name VARCHAR(100) NOT NULL,
+    isbn VARCHAR(50) UNIQUE,
+    quantity INT NOT NULL,
+    available INT NOT NULL
+);
+
 -- Insert default admin
 INSERT INTO admins (username, password) VALUES ('admin', 'admin');
+
+
